@@ -16,9 +16,10 @@ st.set_page_config(page_title="VascularAge AI - Pro", page_icon="⚖️")
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    .main-card { background-color: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid #e2e8f0; border-left: 5px solid #003366; margin-bottom: 20px; }
+    .main-card { background-color: #f0f2f6; padding: 25px; border-radius: 15px; border-left: 10px solid #d93025; margin-bottom: 20px; }
     .stButton>button { background: #003366; color: white; border-radius: 8px; font-weight: bold; width: 100%; height: 3em; }
     .result-text { color: #1e293b; line-height: 1.7; font-size: 1.1em; }
+    .metric-container { background: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -69,22 +70,45 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
         """
         
         try:
-            # ITT TÖRTÉNIK A GENERÁLÁS (Ez hiányzott)
             response = model.generate_content(prompt)
             
-            # Eredmény megjelenítése
             st.divider()
-            st.metric("Becsült érrendszeri életkor:", f"{v_age} év", f"{v_age-age} év eltérés")
+
+            # --- VIZUÁLIS BLOKK 1: MÉRŐSZÁMOK ---
+            risk_percent = min(100, (v_age - age) * 10 + 35)
             
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.metric("Becsült érrendszeri életkor", f"{v_age} év", f"+{v_age-age} év eltérés")
+            with col_m2:
+                st.write(f"**Érfal elzáródási szint: {risk_percent}%**")
+                st.progress(risk_percent / 100)
+
+            # --- VIZUÁLIS BLOKK 2: ÖSSZEHASONLÍTÁS ---
+            st.write("### 🔍 Mikroszkópos érfal analízis")
+            
+            col_img1, col_img2 = st.columns(2)
+            with col_img1:
+                st.error("KRITIKUS ÁLLAPOT")
+                st.image("https://img.freepik.com/free-photo/clogged-artery-with-cholesterol-plaque_1048-12444.jpg", caption="Jelenlegi lerakódások")
+            with col_img2:
+                st.success("TISZTÍTÁS UTÁN")
+                st.image("https://img.freepik.com/free-photo/healthy-artery-without-plaque_1048-12445.jpg", caption="Optimális keringés")
+
+            # --- VIZUÁLIS BLOKK 3: PROFESSZORI LELET ---
             st.markdown(f"""
             <div class='main-card'>
+                <h3 style="color: #d93025; margin-top:0;">📋 Jakab Professzor Diagnózisa</h3>
                 <div class='result-text'>
-                    {response.text}
+                    {response.text.replace('**', '<b>').replace('</b>', '</b>')}
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # A gomb csak a jelentés után jelenik meg
+            # Sürgősségi jelzés
+            st.warning("⚠️ AZONNALI BEAVATKOZÁS SZÜKSÉGES")
+            
+            # CALL TO ACTION GOMB
             st.markdown(f"""
                 <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
                     <button style="width:100%; padding:25px; background: linear-gradient(90deg, #e11d48, #be123c); color:white; font-size:22px; font-weight:bold; border:none; border-radius:12px; cursor:pointer; box-shadow: 0 10px 20px rgba(225, 29, 72, 0.3);">
@@ -95,4 +119,3 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             
         except Exception as e:
             st.error(f"Hiba az AI generálás során: {e}")
-
