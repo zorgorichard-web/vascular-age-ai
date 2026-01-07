@@ -11,10 +11,10 @@ except Exception as e:
 
 # LINKEK - (A PROFESSZOR KÉPÉT FRISSÍTETTEM EGY HITELES ARCCAL)
 AFFILIATE_LINK = "https://a-te-linked-ide.hu"
-PROFESSOR_IMAGE_URL = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&h=500&auto=format&fit=crop" 
+PROFESSOR_IMAGE_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ui715qui715qui71.png" 
 ARTERY_BAD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ymgn5oymgn5oymgn.png"
 ARTERY_GOOD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_fpxagafpxagafpxa.png"
-STAMP_URL = "https://www.pngkit.com/png/full/15-159411_quality-certified-stamp-png-certified-original-stamp-png.png" # Mintapélda pecsétre
+STAMP_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_bg06mbbg06mbbg06.png" # Mintapélda pecsétre
 
 st.set_page_config(page_title="VascularAge AI - Klinikai Analízis", page_icon="⚖️")
 
@@ -186,6 +186,7 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
 # --- NYILATKOZAT ---
 st.markdown("---")
 st.markdown("<div style='font-size: 10px; color: #888; text-align: center;'>NYILATKOZAT: Ez az alkalmazás mesterséges intelligencia alapú elemzést végez. Nem minősül orvosi diagnózisnak. A honlap nem áll kapcsolatban a Facebookkal.</div>", unsafe_allow_html=True)
+
 
 
 
