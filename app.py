@@ -38,7 +38,7 @@ st.markdown("""
     .prof-img { width: 35%; object-fit: cover; border-right: 1px solid #eee; }
     .prof-text { width: 65%; padding: 30px; position: relative; z-index: 2; }
     .prof-name { color: #d93025; margin-top: 0; font-weight: 700; font-size: 1.5em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .stamp-img { position: absolute; bottom: 20px; right: 140px; width: 150px; opacity: 0.5; transform: rotate(-15deg); z-index: 1; pointer-events: none; }
+    .stamp-img { position: absolute; bottom: 10px; right: 100px; width: 150px; opacity: 0.4; transform: rotate(-15deg); z-index: 1; pointer-events: none; }
     .signature-wrap { text-align: right; margin-top: 30px; position: relative; z-index: 3; }
     @keyframes pulse {
         0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.7); }
@@ -120,7 +120,7 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             st.divider()
             st.write(f"📅 **Hivatalos lelet kiállítva:** {date.today().strftime('%Y. %m. %d.')}")
             
-            # --- MÉRŐSZÁMOK ---
+            # --- EREDMÉNYEK ---
             risk_percent = min(100, (v_age - age) * 8 + 40)
             m_col1, m_col2 = st.columns(2)
             with m_col1:
@@ -129,9 +129,8 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
                 st.write(f"**Érfal elzáródási szint: {risk_percent}%**")
                 st.progress(risk_percent / 100)
 
-            # --- KÉPEK (Itt volt a hiba, most javítva) ---
+            # --- KÉPEK ---
             st.write("### 🔍 Mikroszkópos érfal analízis")
-            
             i_col1, i_col2 = st.columns(2)
             i_col1.error("JELENLEGI ÁLLAPOT")
             i_col1.image(ARTERY_BAD_URL, caption="Besűrűsödött vér és lerakódás")
@@ -139,27 +138,30 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             i_col2.image(ARTERY_GOOD_URL, caption="Szabad véráramlás")
 
             # --- PROFESSZORI KÁRTYA ---
-            html_lelet = f"""
+            # A HTML-t darabokban illesztjük be a stabilitásért
+            res_txt = response.text.replace('**', '<b>').replace('</b>', '</b>').replace('\n', '<br>')
+            
+            st.markdown(f"""
             <div class='prof-card'>
                 <img src='{PROFESSOR_IMAGE_URL}' class='prof-img'>
                 <div class='prof-text'>
                     <img src='{STAMP_URL}' class='stamp-img'>
                     <h3 class='prof-name'>📋 Dr. Jakab Tamás Sürgősségi Lelete</h3>
-                    <div class='result-text'>
-                        {response.text.replace('**', '<b>').replace('</b>', '</b>').replace('\\n', '<br>')}
-                    </div>
+                    <div class='result-text'>{res_txt}</div>
                     <div class='signature-wrap'>
                         <img src='https://upload.wikimedia.org/wikipedia/commons/3/3a/Jon_Hancock_Signature.png' width='140' style='filter: brightness(0.5) sepia(1) hue-rotate(200deg);'>
                         <p style='font-family: cursive; font-size: 0.9em; margin-top: -10px; color: #444;'>Dr. Jakab Tamás s.k.</p>
                     </div>
                 </div>
             </div>
-            """
-            st.markdown(html_lelet, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
             
             st.warning("⚠️ HALASZTHATATLAN BEAVATKOZÁS JAVASOLT")
-            st.markdown(f'<a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration:none;"><button>IGÉNYLEM A TISZTÍTÓKÚRÁT (LIMITÁLT 50% KEDVEZMÉNY) »</button></a>', unsafe_allow_html=True)
             
+            # --- GOMB ---
+            st.markdown(f'<a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;"><button>IGÉNYLEM A TISZTÍTÓKÚRÁT (LIMITÁLT 50% KEDVEZMÉNY) »</button></a>', unsafe_allow_html=True)
+            
+            # --- BIZALOM ---
             st.markdown("""
                 <div class='trust-badge-container'>
                     <div class='trust-badge-item'>🔒 SSL BIZTONSÁG</div>
@@ -175,7 +177,6 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("<div style='font-size: 11px; color: #999; text-align: center; padding: 20px;'>NYILATKOZAT: Ez az alkalmazás mesterséges intelligencia alapú állapotfelmérést végez. Az eredmények tájékoztató jellegűek, nem helyettesítik az orvosi diagnózist.</div>", unsafe_allow_html=True)
-
 
 
 
