@@ -21,21 +21,54 @@ st.set_page_config(page_title="VascularAge AI - Klinikai Analízis", page_icon="
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    .prof-card { display: flex; background-color: #f8f9fa; border-radius: 15px; overflow: hidden; border-left: 8px solid #d93025; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    
+    /* Professzor kártya - papír hatás és árnyék */
+    .prof-card { 
+        display: flex; 
+        background-color: #ffffff; 
+        border-radius: 15px; 
+        overflow: hidden; 
+        border: 1px solid #e0e0e0;
+        border-left: 10px solid #d93025; 
+        margin-bottom: 25px; 
+        box-shadow: 0px 10px 30px rgba(0,0,0,0.05); 
+    }
     .prof-img { width: 30%; object-fit: cover; }
     .prof-text { width: 70%; padding: 25px; }
     .prof-name { color: #d93025; margin-top: 0; font-weight: 700; }
-    .stButton>button { background: linear-gradient(90deg, #002244, #004488); color: white; border-radius: 8px; font-weight: bold; width: 100%; height: 3.5em; border: none; font-size: 1.1em; }
+    
+    /* Mérőszámok (Metric) kiemelése */
+    [data-testid="stMetricValue"] {
+        color: #d93025 !important;
+        font-weight: 900 !important;
+    }
+
+    /* Pulzáló gomb animáció */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+    .stButton>button { 
+        background: linear-gradient(90deg, #d93025, #a00000) !important; 
+        color: white !important; 
+        border-radius: 12px !important; 
+        font-weight: bold !important; 
+        width: 100%; 
+        height: 4em !important; 
+        border: none !important;
+        animation: pulse 2s infinite; /* Itt kapcsoljuk be a lüktetést */
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
     .result-text { color: #1e293b; line-height: 1.8; font-size: 1.15em; font-family: 'Georgia', serif; }
     .stat-box { text-align: center; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
     .trust-badge { text-align: center; font-size: 0.8em; color: #555; }
+    
     @media (max-width: 600px) { .prof-card { flex-direction: column; } .prof-img { width: 100%; height: 250px; } .prof-text { width: 100%; } }
     </style>
     """, unsafe_allow_html=True)
-
-st.title("⚖️ VascularAge AI™")
-st.write("#### Személyre szabott érrendszeri diagnosztikai protokoll")
-
 # --- SOCIAL PROOF ---
 st.write("---")
 col_s1, col_s2, col_s3 = st.columns(3)
@@ -162,6 +195,7 @@ st.markdown("""
         A honlap nem áll kapcsolatban a Facebookkal vagy a Metával.
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
