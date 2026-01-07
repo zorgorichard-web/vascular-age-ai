@@ -8,8 +8,11 @@ try:
 except Exception as e:
     st.error("Rendszerhiba: A diagnosztikai modul nem elérhető.")
 
-# Ide jön a végleges AdCombo linked
-AFFILIATE_LINK = "https://a-te-linked-ide.hu" 
+# LINKEK (Cseréld le a professzor képének linkjét a sajátodra!)
+AFFILIATE_LINK = "https://a-te-linked-ide.hu"
+PROFESSOR_IMAGE_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ui715qui715qui71.png" # <-- IDE JÖN A KÉP LINKJE
+ARTERY_BAD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ymgn5oymgn5oymgn.png"
+ARTERY_GOOD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_fpxagafpxagafpxa.png"
 
 st.set_page_config(page_title="VascularAge AI - Klinikai Analízis", page_icon="⚖️")
 
@@ -17,25 +20,39 @@ st.set_page_config(page_title="VascularAge AI - Klinikai Analízis", page_icon="
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    .main-card { background-color: #fcfcfc; padding: 30px; border-radius: 15px; border: 1px solid #e0e0e0; border-left: 10px solid #d93025; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    /* Professzor kártya stílusa */
+    .prof-card { display: flex; background-color: #f8f9fa; border-radius: 15px; overflow: hidden; border-left: 8px solid #d93025; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    .prof-img { width: 30%; object-fit: cover; }
+    .prof-text { width: 70%; padding: 25px; }
+    .prof-name { color: #d93025; margin-top: 0; font-weight: 700; }
+    
+    /* Gomb és egyéb elemek */
     .stButton>button { background: linear-gradient(90deg, #002244, #004488); color: white; border-radius: 8px; font-weight: bold; width: 100%; height: 3.5em; border: none; font-size: 1.1em; }
     .result-text { color: #1e293b; line-height: 1.8; font-size: 1.15em; font-family: 'Georgia', serif; }
-    .stat-box { text-align: center; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+    .stat-box { text-align: center; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .trust-badge { text-align: center; font-size: 0.8em; color: #555; }
+    
+    /* Reszponzív igazítás mobilra */
+    @media (max-width: 600px) {
+        .prof-card { flex-direction: column; }
+        .prof-img { width: 100%; height: 250px; }
+        .prof-text { width: 100%; }
+    }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("⚖️ VascularAge AI™")
 st.write("#### Személyre szabott érrendszeri diagnosztikai protokoll")
 
-# --- SOCIAL PROOF (Bizalomépítő adatok) ---
+# --- SOCIAL PROOF ---
 st.write("---")
 col_s1, col_s2, col_s3 = st.columns(3)
 with col_s1:
-    st.markdown("<div class='stat-box'><small>Ma elvégzett elemzés</small><br><b>1,432</b></div>", unsafe_allow_html=True)
+    st.markdown("<div class='stat-box'><small>Elemzések ma</small><br><b>1,432</b></div>", unsafe_allow_html=True)
 with col_s2:
-    st.markdown("<div class='stat-box'><small>Kritikus állapot</small><br><b style='color:#d93025;'>84%</b></div>", unsafe_allow_html=True)
+    st.markdown("<div class='stat-box'><small>Kritikus eset</small><br><b style='color:#d93025;'>84%</b></div>", unsafe_allow_html=True)
 with col_s3:
-    st.markdown("<div class='stat-box'><small>Aktív kedvezmény</small><br><b style='color:#1e8e3e;'>50%</b></div>", unsafe_allow_html=True)
+    st.markdown("<div class='stat-box'><small>Garancia</small><br><b style='color:#1e8e3e;'>100%</b></div>", unsafe_allow_html=True)
 st.write("---")
 
 # --- KÉRDŐÍV ---
@@ -48,7 +65,7 @@ with st.container():
         weight_status = st.selectbox("Testsúly", ["Normál", "Túlsúly"])
         stress = st.select_slider("Stressz-szint", ["Alacsony", "Átlagos", "Magas"])
 
-    st.write("**Jelölje be, ha az alábbiakat tapasztalja:**")
+    st.write("**Jelölje be a tapasztalt tüneteket:**")
     c1, c2 = st.columns(2)
     with c1:
         s1 = st.checkbox("Lábdagadás (ödéma)")
@@ -57,7 +74,7 @@ with st.container():
         s3 = st.checkbox("Fülzúgás / Szédülés")
         s4 = st.checkbox("Zsibbadó végtagok")
 
-# --- ELEMZÉS ---
+# --- ELEMZÉS LOGIKA ---
 if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
     symptoms = []
     if s1: symptoms.append("ödéma")
@@ -84,12 +101,10 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
         
         try:
             response = model.generate_content(prompt)
-            
             st.divider()
 
-            # --- MÉRŐSZÁMOK ---
+            # 1. MÉRŐSZÁMOK
             risk_percent = min(100, (v_age - age) * 10 + 40)
-            
             col_m1, col_m2 = st.columns(2)
             with col_m1:
                 st.metric("BECSÜLT ÉRRENDSZERI KOR", f"{v_age} ÉV", f"+{v_age-age} év eltérés")
@@ -97,29 +112,29 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
                 st.write(f"**Érfal elzáródási szint: {risk_percent}%**")
                 st.progress(risk_percent / 100)
 
-            # --- VIZUÁLIS SOKK ---
+            # 2. VIZUÁLIS SOKK (Előtte-Utána)
             st.write("### 🔍 Mikroszkópos érfal analízis")
             col_img1, col_img2 = st.columns(2)
             with col_img1:
                 st.error("KRITIKUS ÁLLAPOT")
-                st.image("https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ymgn5oymgn5oymgn.png", caption="Jelenlegi lerakódások")
+                st.image(ARTERY_BAD_URL, caption="Jelenlegi lerakódások")
             with col_img2:
                 st.success("TISZTÍTÁS UTÁN")
-                st.image("https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_fpxagafpxagafpxa.png", caption="Optimális keringés")
+                st.image(ARTERY_GOOD_URL, caption="Optimális keringés")
 
-            # --- PROFESSZORI LELET ---
+            # 3. A PROFESSZOR DIAGNÓZISA (Képpel!)
             st.markdown(f"""
-            <div class='main-card'>
-                <h3 style="color: #d93025; margin-top:0;">📋 Jakab Professzor Sürgősségi Diagnózisa</h3>
-                <div class='result-text'>
-                    {response.text.replace('**', '<b>').replace('</b>', '</b>')}
+            <div class='prof-card'>
+                <img src='{PROFESSOR_IMAGE_URL}' class='prof-img'>
+                <div class='prof-text'>
+                    <h3 class='prof-name'>📋 Jakab Professzor Sürgősségi Diagnózisa</h3>
+                    <div class='result-text'>{response.text.replace('**', '<b>').replace('</b>', '</b>')}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
+            # 5. CALL TO ACTION + TRUST BADGES
             st.warning("⚠️ HALASZTHATATLAN BEAVATKOZÁS JAVASOLT")
-            
-            # CALL TO ACTION GOMB
             st.markdown(f"""
                 <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
                     <button style="width:100%; padding:25px; background: linear-gradient(90deg, #d93025, #a00000); color:white; font-size:22px; font-weight:bold; border:none; border-radius:12px; cursor:pointer; box-shadow: 0 10px 25px rgba(217, 48, 37, 0.4);">
@@ -129,7 +144,14 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             """, unsafe_allow_html=True)
             st.caption("<center>Kattintson a fenti gombra a kedvezményes program megnyitásához.</center>", unsafe_allow_html=True)
             
+            # Bizalmi jelvények a gomb alatt
+            st.write("---")
+            tb1, tb2, tb3, tb4 = st.columns(4)
+            tb1.markdown("<div class='trust-badge'>🔒<br>Biztonságos SSL</div>", unsafe_allow_html=True)
+            tb2.markdown("<div class='trust-badge'>🌿<br>100% Természetes</div>", unsafe_allow_html=True)
+            tb3.markdown("<div class='trust-badge'>✅<br>Klinikailag Tesztelt</div>", unsafe_allow_html=True)
+            tb4.markdown("<div class='trust-badge'>🚚<br>Gyors Kiszállítás</div>", unsafe_allow_html=True)
+            
         except Exception as e:
             st.error("A szerver túlterhelt. Kérjük, várjon 10 másodpercet.")
-
 
