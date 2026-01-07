@@ -149,7 +149,7 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             tb3.markdown("<div class='trust-badge'>✅<br>Klinikai Teszt</div>", unsafe_allow_html=True)
             tb4.markdown("<div class='trust-badge'>🚚<br>Gyors Házhozszállítás</div>", unsafe_allow_html=True)
 
-            st.write("---")
+            
 st.markdown("""
     <div style='font-size: 10px; color: #888; text-align: center; padding: 20px;'>
         NYILATKOZAT: Ez az alkalmazás mesterséges intelligencia alapú elemzést végez a megadott adatok alapján. 
@@ -161,5 +161,6 @@ st.markdown("""
             
         except Exception as e:
             st.error("Rendszerhiba lépett fel. Próbálja újra pár pillanat múlva.")
+
 
 
