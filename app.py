@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+from datetime import date
 
 # 1. KONFIGURÁCIÓ
 try:
@@ -8,9 +9,9 @@ try:
 except Exception as e:
     st.error("Rendszerhiba: A diagnosztikai modul nem elérhető.")
 
-# LINKEK (Cseréld le a professzor képének linkjét a sajátodra!)
+# LINKEK (A professzor képének helye és az affiliate link)
 AFFILIATE_LINK = "https://a-te-linked-ide.hu"
-PROFESSOR_IMAGE_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ui715qui715qui71.png" # <-- IDE JÖN A KÉP LINKJE
+PROFESSOR_IMAGE_URL = "https://via.placeholder.com/300x400.png?text=Prof+Jakab+Foto" 
 ARTERY_BAD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ymgn5oymgn5oymgn.png"
 ARTERY_GOOD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_fpxagafpxagafpxa.png"
 
@@ -20,24 +21,15 @@ st.set_page_config(page_title="VascularAge AI - Klinikai Analízis", page_icon="
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    /* Professzor kártya stílusa */
     .prof-card { display: flex; background-color: #f8f9fa; border-radius: 15px; overflow: hidden; border-left: 8px solid #d93025; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
     .prof-img { width: 30%; object-fit: cover; }
     .prof-text { width: 70%; padding: 25px; }
     .prof-name { color: #d93025; margin-top: 0; font-weight: 700; }
-    
-    /* Gomb és egyéb elemek */
     .stButton>button { background: linear-gradient(90deg, #002244, #004488); color: white; border-radius: 8px; font-weight: bold; width: 100%; height: 3.5em; border: none; font-size: 1.1em; }
     .result-text { color: #1e293b; line-height: 1.8; font-size: 1.15em; font-family: 'Georgia', serif; }
-    .stat-box { text-align: center; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .stat-box { text-align: center; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
     .trust-badge { text-align: center; font-size: 0.8em; color: #555; }
-    
-    /* Reszponzív igazítás mobilra */
-    @media (max-width: 600px) {
-        .prof-card { flex-direction: column; }
-        .prof-img { width: 100%; height: 250px; }
-        .prof-text { width: 100%; }
-    }
+    @media (max-width: 600px) { .prof-card { flex-direction: column; } .prof-img { width: 100%; height: 250px; } .prof-text { width: 100%; } }
     </style>
     """, unsafe_allow_html=True)
 
@@ -60,9 +52,11 @@ with st.container():
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Életkor", 18, 100, 48)
-        lifestyle = st.selectbox("Életmód", ["Ülőmunka", "Kevés mozgás", "Aktív"])
+        gender = st.selectbox("Nem", ["Férfi", "Nő"])
+        height = st.number_input("Magasság (cm)", 120, 220, 175)
     with col2:
-        weight_status = st.selectbox("Testsúly", ["Normál", "Túlsúly"])
+        weight = st.number_input("Testsúly (kg)", 40, 200, 85)
+        lifestyle = st.selectbox("Életmód", ["Ülőmunka", "Kevés mozgás", "Aktív"])
         stress = st.select_slider("Stressz-szint", ["Alacsony", "Átlagos", "Magas"])
 
     st.write("**Jelölje be a tapasztalt tüneteket:**")
@@ -76,34 +70,39 @@ with st.container():
 
 # --- ELEMZÉS LOGIKA ---
 if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
+    # BMI számítás a tudományosság kedvéért
+    bmi = round(weight / ((height/100)**2), 1)
+    
     symptoms = []
     if s1: symptoms.append("ödéma")
     if s2: symptoms.append("reggeli fejfájás")
     if s3: symptoms.append("fülzúgás")
     if s4: symptoms.append("zsibbadás")
     
-    v_age = age + (len(symptoms) * 5) + (3 if weight_status == "Túlsúly" else 0)
+    # Érrendszeri kor finomított számítása
+    v_age = age + (len(symptoms) * 5) + (5 if bmi > 28 else 0) + (3 if stress == "Magas" else 0)
     
-    # PSZICHOLÓGIAI SPINNER
-    with st.spinner('Jakab professzor éppen elemzi az Ön biológiai markereit... Ez aggasztónak tűnik.'):
-        
+    with st.spinner('Adatok feldolgozása...'):
         prompt = f"""
-        Te Jakab Tamás professzor vagy, érrendszeri specialista. Egy 50+ éves emberhez beszélsz, aki fél.
-        Adatok: Kor: {age}, Tünetek: {', '.join(symptoms)}. Érrendszeri kor: {v_age} év.
+        Te Jakab Tamás professzor vagy. Egy {gender} pácienshez beszélsz.
+        Adatok: Kor: {age}, Súly: {weight} kg, Magasság: {height} cm, BMI: {bmi}.
+        Tünetek: {', '.join(symptoms)}. Számított érrendszeri kor: {v_age} év.
 
-        Írj egy nyers, drasztikus, de segítőkész elemzést:
-        - Mondd ki: amit érez, az a SZERVEZETE SEGÉLYKIÁLTÁSA.
-        - Használd: "6,1 kg lerakódás az erekben", "időzített bomba a véráramban".
-        - Ne kertelj: ha nem tisztítja ki az ereit, a következő állomás a rohammentő.
-        - A Cardiotensive az EGYETLEN esélye, hogy "kibelezze" ezt a koszt a rendszeréből.
-        - Stílus: rövid, ütős mondatok, orvosi tekintély, nulla AI sallang.
+        Írj egy nyers, sokkoló elemzést:
+        - Szólítsd meg a nemének megfelelően (Uram/Asszonyom).
+        - Utalj a súlyára: ha a BMI magas, mondd el, hogy a szíve minden dobbanással egy mázsás terhet cipel.
+        - Használd: "6,1 kg lerakódás az erekben", "időzített bomba".
+        - A megoldás a Cardiotensive tisztítókúra.
+        - Stílus: rövid mondatok, tekintélyelvű, vészjósló.
         """
         
         try:
             response = model.generate_content(prompt)
             st.divider()
-
-            # 1. MÉRŐSZÁMOK
+            
+            # 1. DÁTUM ÉS MÉRŐSZÁMOK
+            st.write(f"📅 **Lelet kiállítva:** {date.today().strftime('%Y. %m. %d.')}")
+            
             risk_percent = min(100, (v_age - age) * 10 + 40)
             col_m1, col_m2 = st.columns(2)
             with col_m1:
@@ -112,28 +111,28 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
                 st.write(f"**Érfal elzáródási szint: {risk_percent}%**")
                 st.progress(risk_percent / 100)
 
-            # 2. VIZUÁLIS SOKK (Előtte-Utána)
+            # 2. VIZUÁLIS SOKK
             st.write("### 🔍 Mikroszkópos érfal analízis")
             col_img1, col_img2 = st.columns(2)
             with col_img1:
                 st.error("KRITIKUS ÁLLAPOT")
-                st.image(ARTERY_BAD_URL, caption="Jelenlegi lerakódások")
+                st.image(ARTERY_BAD_URL, caption="Besűrűsödött vér és lerakódás")
             with col_img2:
                 st.success("TISZTÍTÁS UTÁN")
-                st.image(ARTERY_GOOD_URL, caption="Optimális keringés")
+                st.image(ARTERY_GOOD_URL, caption="Szabad véráramlás")
 
-            # 3. A PROFESSZOR DIAGNÓZISA (Képpel!)
+            # 3. PROFESSZOR DIAGNÓZISA
             st.markdown(f"""
             <div class='prof-card'>
                 <img src='{PROFESSOR_IMAGE_URL}' class='prof-img'>
                 <div class='prof-text'>
-                    <h3 class='prof-name'>📋 Jakab Professzor Sürgősségi Diagnózisa</h3>
+                    <h3 class='prof-name'>📋 Dr. Jakab Tamás Sürgősségi Lelete</h3>
                     <div class='result-text'>{response.text.replace('**', '<b>').replace('</b>', '</b>')}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # 5. CALL TO ACTION + TRUST BADGES
+            # 4. CTA GOMB + TRUST BADGES
             st.warning("⚠️ HALASZTHATATLAN BEAVATKOZÁS JAVASOLT")
             st.markdown(f"""
                 <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
@@ -142,16 +141,14 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
                     </button>
                 </a>
             """, unsafe_allow_html=True)
-            st.caption("<center>Kattintson a fenti gombra a kedvezményes program megnyitásához.</center>", unsafe_allow_html=True)
             
-            # Bizalmi jelvények a gomb alatt
             st.write("---")
             tb1, tb2, tb3, tb4 = st.columns(4)
-            tb1.markdown("<div class='trust-badge'>🔒<br>Biztonságos SSL</div>", unsafe_allow_html=True)
-            tb2.markdown("<div class='trust-badge'>🌿<br>100% Természetes</div>", unsafe_allow_html=True)
-            tb3.markdown("<div class='trust-badge'>✅<br>Klinikailag Tesztelt</div>", unsafe_allow_html=True)
-            tb4.markdown("<div class='trust-badge'>🚚<br>Gyors Kiszállítás</div>", unsafe_allow_html=True)
+            tb1.markdown("<div class='trust-badge'>🔒<br>SSL Biztonság</div>", unsafe_allow_html=True)
+            tb2.markdown("<div class='trust-badge'>🌿<br>Natúr Összetevők</div>", unsafe_allow_html=True)
+            tb3.markdown("<div class='trust-badge'>✅<br>Klinikai Teszt</div>", unsafe_allow_html=True)
+            tb4.markdown("<div class='trust-badge'>🚚<br>Gyors Házhozszállítás</div>", unsafe_allow_html=True)
             
         except Exception as e:
-            st.error("A szerver túlterhelt. Kérjük, várjon 10 másodpercet.")
+            st.error("Rendszerhiba lépett fel. Próbálja újra pár pillanat múlva.")
 
