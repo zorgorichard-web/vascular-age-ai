@@ -1,27 +1,24 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. KONFIGURÁCIÓ ÉS TITKOK
-# A Streamlit Secrets-ből olvassuk ki a kulcsot
+# 1. KONFIGURÁCIÓ
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # Itt definiáljuk a modellt - EZ HIÁNYZOTT KORÁBBAN
     model = genai.GenerativeModel('gemini-2.0-flash')
 except Exception as e:
-    st.error(f"Hiba a konfiguráció során: {e}. Ellenőrizd a Secrets beállításokat!")
+    st.error("Hiba a Secrets beállításoknál! Ellenőrizd a GEMINI_API_KEY-t.")
 
-# Ide írd a saját AdCombo linkedet
+# Ide jön a végleges AdCombo linked
 AFFILIATE_LINK = "https://a-te-linked-ide.hu" 
 
-# --- OLDAL BEÁLLÍTÁSA ---
 st.set_page_config(page_title="VascularAge AI - Pro", page_icon="⚖️")
 
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    .main-card { background-color: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid #e2e8f0; border-left: 5px solid #003366; }
+    .main-card { background-color: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid #e2e8f0; border-left: 5px solid #003366; margin-bottom: 20px; }
     .stButton>button { background: #003366; color: white; border-radius: 8px; font-weight: bold; width: 100%; height: 3em; }
-    .result-text { color: #1e293b; line-height: 1.6; }
+    .result-text { color: #1e293b; line-height: 1.7; font-size: 1.1em; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -55,7 +52,7 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
     
     v_age = age + (len(symptoms) * 5)
     
-    with st.spinner('AI Diagnosztika futtatása...'):
+    with st.spinner('Jakab professzor AI modulja elemzi az adatokat...'):
         prompt = f"""
         Te Jakab Tamás professzor vagy, az érrendszer specialistája. 
         A páciens adatai: Kor: {age}, Tünetek: {', '.join(symptoms)}. 
@@ -70,14 +67,31 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
 
         FONTOS: Ne használj unalmas jogi nyilatkozatokat. Legyél határozott, tekintélyelvű és meggyőző. Magyarul írj, tagolatlan, hosszú bekezdések helyett használj figyelemfelkeltő stílust.
         """
+        
+        try:
+            # ITT TÖRTÉNIK A GENERÁLÁS (Ez hiányzott)
+            response = model.generate_content(prompt)
+            
+            # Eredmény megjelenítése
+            st.divider()
+            st.metric("Becsült érrendszeri életkor:", f"{v_age} év", f"{v_age-age} év eltérés")
             
             st.markdown(f"""
-    <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
-        <button style="width:100%; padding:25px; background: linear-gradient(90deg, #e11d48, #be123c); color:white; font-size:22px; font-weight:bold; border:none; border-radius:12px; cursor:pointer; box-shadow: 0 10px 20px rgba(225, 29, 72, 0.3);">
-            IGÉNYLEM A TISZTÍTÓKÚRÁT (LIMITÁLT 50% KEDVEZMÉNY) »
-        </button>
-    </a>
-""", unsafe_allow_html=True)
+            <div class='main-card'>
+                <div class='result-text'>
+                    {response.text}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # A gomb csak a jelentés után jelenik meg
+            st.markdown(f"""
+                <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
+                    <button style="width:100%; padding:25px; background: linear-gradient(90deg, #e11d48, #be123c); color:white; font-size:22px; font-weight:bold; border:none; border-radius:12px; cursor:pointer; box-shadow: 0 10px 20px rgba(225, 29, 72, 0.3);">
+                        IGÉNYLEM A TISZTÍTÓKÚRÁT (LIMITÁLT 50% KEDVEZMÉNY) »
+                    </button>
+                </a>
+            """, unsafe_allow_html=True)
             
         except Exception as e:
             st.error(f"Hiba az AI generálás során: {e}")
