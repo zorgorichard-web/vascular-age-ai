@@ -102,10 +102,10 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             col_img1, col_img2 = st.columns(2)
             with col_img1:
                 st.error("KRITIKUS ÁLLAPOT")
-                st.image("https://img.freepik.com/free-photo/clogged-artery-with-cholesterol-plaque_1048-12444.jpg", caption="Jelenlegi lerakódások")
+                st.image("https://github.com/zorgorichard-web/vascular-age-ai/blob/main/Gemini_Generated_Image_ymgn5oymgn5oymgn.png", caption="Jelenlegi lerakódások")
             with col_img2:
                 st.success("TISZTÍTÁS UTÁN")
-                st.image("https://img.freepik.com/free-photo/healthy-artery-without-plaque_1048-12445.jpg", caption="Optimális keringés")
+                st.image("https://github.com/zorgorichard-web/vascular-age-ai/blob/main/Gemini_Generated_Image_fpxagafpxagafpxa.png", caption="Optimális keringés")
 
             # --- PROFESSZORI LELET ---
             st.markdown(f"""
@@ -131,3 +131,4 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             
         except Exception as e:
             st.error("A szerver túlterhelt. Kérjük, várjon 10 másodpercet.")
+
