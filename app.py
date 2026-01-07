@@ -1,120 +1,79 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. KONFIGURÁCIÓ
-API_KEY = "AIzaSyA0mRb_Ance9eUvUGpVKHfUIoIC-wXnL24" # A fizetős kulcsod
-AFFILIATE_LINK = "https://a-te-link-helye.hu" # IDE ÍRD A VÉGLEGES LINKET
+# 1. KONFIGURÁCIÓ ÉS TITKOK
+# A Streamlit Secrets-ből olvassuk ki a kulcsot
+try:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # Itt definiáljuk a modellt - EZ HIÁNYZOTT KORÁBBAN
+    model = genai.GenerativeModel('gemini-2.0-flash')
+except Exception as e:
+    st.error(f"Hiba a konfiguráció során: {e}. Ellenőrizd a Secrets beállításokat!")
 
-# HASZNÁLD EZT:
-import streamlit as st
+# Ide írd a saját AdCombo linkedet
+AFFILIATE_LINK = "https://a-te-linked-ide.hu" 
 
-# A kulcsot a Streamlit "titkos" beállításaiból olvassuk ki
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- OLDAL BEÁLLÍTÁSA ---
-st.set_page_config(page_title="VascularAge AI - Klinikai Elemző", page_icon="⚖️", layout="centered")
+st.set_page_config(page_title="VascularAge AI - Pro", page_icon="⚖️")
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-    html, body, [class*="st-"] { font-family: 'Inter', sans-serif; }
-    .main { background-color: #ffffff; }
-    .stButton>button { 
-        background: linear-gradient(135deg, #003366 0%, #004080 100%); 
-        color: white; border-radius: 8px; padding: 1rem; font-weight: bold; border: none; width: 100%;
-    }
-    .report-card { 
-        background-color: #f0f7ff; padding: 25px; border-radius: 15px; 
-        border: 1px solid #cce3ff; color: #002244; line-height: 1.7;
-    }
-    .metric-box { text-align: center; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .stApp { background-color: #ffffff; }
+    .main-card { background-color: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid #e2e8f0; border-left: 5px solid #003366; }
+    .stButton>button { background: #003366; color: white; border-radius: 8px; font-weight: bold; width: 100%; height: 3em; }
+    .result-text { color: #1e293b; line-height: 1.6; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- FEJLÉC ---
 st.title("⚖️ VascularAge AI™")
-st.write("#### Precíziós érrendszeri állapotfelmérés és kockázati analízis")
-st.divider()
+st.write("#### Professzionális érrendszeri állapotfelmérés")
 
-# --- ADATBEVITEL ---
+# --- KÉRDŐÍV ---
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Életkor", 18, 100, 48)
-        gender = st.selectbox("Nem", ["Férfi", "Nő"])
-        weight_status = st.select_slider("Testsúly index", options=["Optimális", "Enyhe túlsúly", "Kifejezett túlsúly"])
+        lifestyle = st.selectbox("Életmód", ["Ülőmunka", "Kevés mozgás", "Aktív"])
     with col2:
-        lifestyle = st.selectbox("Életmód", ["Ülőmunka", "Kevés mozgás", "Aktív életmód"])
-        stress = st.selectbox("Stressz-szint", ["Alacsony", "Átlagos", "Kritikus"])
-        blood_pressure = st.selectbox("Ismert vérnyomás profil", ["Normál", "Ingadozó", "Diagnosztizált hipertónia"])
+        weight_status = st.selectbox("Testsúly", ["Normál", "Túlsúly"])
+        stress = st.select_slider("Stressz-szint", ["Alacsony", "Átlagos", "Magas"])
 
     st.write("---")
-    st.write("**Klinikai tünetek monitorozása (Jelölje be):**")
-    c1, c2 = st.columns(2)
-    with c1:
-        s1 = st.checkbox("Alsó végtagi ödéma (lábdagadás)")
-        s2 = st.checkbox("Reggeli fejfájás / Nyaki merevség")
-    with c2:
-        s3 = st.checkbox("Fülzúgás / Szédüléses epizódok")
-        s4 = st.checkbox("Végtagzsibbadás / Hideg végtagok")
+    st.write("**Jelölje be az Önre jellemző tüneteket:**")
+    s1 = st.checkbox("Lábdagadás (ödéma)")
+    s2 = st.checkbox("Reggeli fejfájás")
+    s3 = st.checkbox("Fülzúgás / Szédülés")
+    s4 = st.checkbox("Zsibbadó végtagok")
 
-# --- ANALÍZIS LOGIKA ---
+# --- ELEMZÉS ---
 if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
     symptoms = []
-    if s1: symptoms.append("alsó végtagi ödéma")
-    if s2: symptoms.append("reggeli hipertóniás fejfájás")
-    if s3: symptoms_list = "tinnitus és vestibuláris zavarok"
-    if s4: symptoms.append("perifériás keringési zavar (zsibbadás)")
-
-    # Biológiai kor becslés
-    v_age = age + (len(symptoms) * 4) + (5 if blood_pressure == "Diagnosztizált hipertónia" else 0)
+    if s1: symptoms.append("ödéma")
+    if s2: symptoms.append("reggeli fejfájás")
+    if s3: symptoms.append("fülzúgás")
+    if s4: symptoms.append("zsibbadás")
     
-    with st.spinner('AI Diagnosztikai protokoll futtatása...'):
-        system_prompt = f"""
-        Te egy vezető kardiológus professzor vagy. Elemezd a pácienst: 
-        Kor: {age}, Nem: {gender}, Életmód: {lifestyle}, Súly: {weight_status}, Stressz: {stress}, Vérnyomás: {blood_pressure}, Tünetek: {', '.join(symptoms)}.
+    v_age = age + (len(symptoms) * 5)
+    
+    with st.spinner('AI Diagnosztika futtatása...'):
+        prompt = f"Kardiológusként elemezd: Kor: {age}, Tünetek: {', '.join(symptoms)}. Életkor becslés: {v_age} év. Javasold a Cardiotensive-et (olajfalevél, galagonya). Magyarul válaszolj."
         
-        A feladatod:
-        1. Érrendszeri életkor: {v_age} év.
-        2. Tudományos magyarázat: Miért okoznak ezek a tünetek érfal-károsodást (koleszterin plakkok, kalcium sók).
-        3. Megoldás: Miért kulcsfontosságú az erek tisztítása olajfalevéllel és galagonyával.
-        4. Sürgősség: Miért nem szabad halogatni a kezelést.
-        
-        Stílus: Orvosi tekintélyt sugárzó, de érthető és meggyőző. Ne használj listákat, folyószöveget írj.
-        """
-
         try:
-            response = model.generate_content(system_prompt)
-            
-            # --- EREDMÉNYEK ---
-            st.success("Analízis kész.")
+            # Most már a 'model' változó biztosan létezik
+            response = model.generate_content(prompt)
             
             st.divider()
-            c1, c2 = st.columns([1, 2])
-            with c1:
-                st.markdown(f"""
-                <div class="metric-box">
-                    <p style="font-size: 14px; color: #666;">Becsült érrendszeri kor</p>
-                    <h1 style="color: #d93025; margin: 0;">{v_age} év</h1>
-                    <p style="color: {'#d93025' if v_age > age else '#1e8e3e'}">{v_age - age} év eltérés</p>
-                </div>
-                """, unsafe_allow_html=True)
+            st.metric("Becsült érrendszeri életkor:", f"{v_age} év", f"{v_age-age} év eltérés")
             
-            with c2:
-                st.markdown(f"<div class='report-card'>{response.text}</div>", unsafe_allow_html=True)
-
-            # --- CALL TO ACTION ---
+            st.markdown(f"<div class='main-card'><div class='result-text'>{response.text}</div></div>", unsafe_allow_html=True)
+            
             st.markdown(f"""
-                <div style="background: #fff3f3; padding: 30px; border-radius: 15px; margin-top: 30px; border: 2px solid #d93025; text-align: center;">
-                    <h3 style="color: #d93025; margin-top: 0;">⚠️ Halaszthatatlan beavatkozás javasolt</h3>
-                    <p>Az Ön profilja alapján az érfalak megtisztítása és a koleszterin-lerakódások feloldása elsődleges fontosságú.</p>
-                    <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
-                        <button style="background: #d93025; color: white; padding: 20px 40px; border-radius: 10px; font-size: 20px; font-weight: bold; border: none; cursor: pointer; width: 100%;">
-                            KÉREM A JAVASOLT KÚRÁT (50% KEDVEZMÉNY) >>
-                        </button>
-                    </a>
-                    <p style="font-size: 12px; margin-top: 10px; color: #666;">*A kedvezményes program 2026. 01. 07-ig érvényes.</p>
-                </div>
+                <a href="{AFFILIATE_LINK}" target="_blank">
+                    <button style="width:100%; padding:20px; background: #dc2626; color:white; font-size:18px; font-weight:bold; border:none; border-radius:10px; cursor:pointer; margin-top:20px;">
+                        MEGNÉZEM A JAVASOLT KÚRÁT (50% KEDVEZMÉNY) >>
+                    </button>
+                </a>
             """, unsafe_allow_html=True)
-
+            
         except Exception as e:
-            st.error(f"Hiba az elemzés során: {e}")
+            st.error(f"Hiba az AI generálás során: {e}")
