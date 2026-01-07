@@ -9,7 +9,7 @@ try:
 except Exception as e:
     st.error("Rendszerhiba: A diagnosztikai modul nem elérhető.")
 
-# LINKEK (A professzor képének helye és az affiliate link)
+# LINKEK
 AFFILIATE_LINK = "https://a-te-linked-ide.hu"
 PROFESSOR_IMAGE_URL = "https://via.placeholder.com/300x400.png?text=Prof+Jakab+Foto" 
 ARTERY_BAD_URL = "https://raw.githubusercontent.com/zorgorichard-web/vascular-age-ai/refs/heads/main/Gemini_Generated_Image_ymgn5oymgn5oymgn.png"
@@ -70,7 +70,7 @@ with st.container():
 
 # --- ELEMZÉS LOGIKA ---
 if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
-    # BMI számítás a tudományosság kedvéért
+    # BMI számítás
     bmi = round(weight / ((height/100)**2), 1)
     
     symptoms = []
@@ -79,7 +79,7 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
     if s3: symptoms.append("fülzúgás")
     if s4: symptoms.append("zsibbadás")
     
-    # Érrendszeri kor finomított számítása
+    # Érrendszeri kor számítása
     v_age = age + (len(symptoms) * 5) + (5 if bmi > 28 else 0) + (3 if stress == "Magas" else 0)
     
     with st.spinner('Adatok feldolgozása...'):
@@ -149,7 +149,11 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
             tb3.markdown("<div class='trust-badge'>✅<br>Klinikai Teszt</div>", unsafe_allow_html=True)
             tb4.markdown("<div class='trust-badge'>🚚<br>Gyors Házhozszállítás</div>", unsafe_allow_html=True)
 
-            
+        except Exception as e:
+            st.error(f"AI hiba: {e}")
+
+# --- NYILATKOZAT (Mindig látható lábléc) ---
+st.markdown("---")
 st.markdown("""
     <div style='font-size: 10px; color: #888; text-align: center; padding: 20px;'>
         NYILATKOZAT: Ez az alkalmazás mesterséges intelligencia alapú elemzést végez a megadott adatok alapján. 
@@ -158,9 +162,7 @@ st.markdown("""
         A honlap nem áll kapcsolatban a Facebookkal vagy a Metával.
     </div>
 """, unsafe_allow_html=True)
-            
-        except Exception as e:
-            st.error("Rendszerhiba lépett fel. Próbálja újra pár pillanat múlva.")
+
 
 
 
