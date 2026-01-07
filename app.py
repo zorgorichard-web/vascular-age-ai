@@ -56,24 +56,29 @@ if st.button("KLINIKAI JELENTÉS GENERÁLÁSA"):
     v_age = age + (len(symptoms) * 5)
     
     with st.spinner('AI Diagnosztika futtatása...'):
-        prompt = f"Kardiológusként elemezd: Kor: {age}, Tünetek: {', '.join(symptoms)}. Életkor becslés: {v_age} év. Javasold a Cardiotensive-et (olajfalevél, galagonya). Magyarul válaszolj."
-        
-        try:
-            # Most már a 'model' változó biztosan létezik
-            response = model.generate_content(prompt)
-            
-            st.divider()
-            st.metric("Becsült érrendszeri életkor:", f"{v_age} év", f"{v_age-age} év eltérés")
-            
-            st.markdown(f"<div class='main-card'><div class='result-text'>{response.text}</div></div>", unsafe_allow_html=True)
+        prompt = f"""
+        Te Jakab Tamás professzor vagy, az érrendszer specialistája. 
+        A páciens adatai: Kor: {age}, Tünetek: {', '.join(symptoms)}. 
+        Számított érrendszeri kor: {v_age} év.
+
+        Írj egy sokkoló, de szakmai elemzést a következő pontok alapján:
+        1. Diagnózis: Mondd el, hogy a {v_age} éves érrendszeri kor kritikus állapotot jelez. 
+        2. Magyarázat: Használd a "6,1 kg lerakódás" és az "elzáródott erek a betegségek 90%-ának okai" kifejezéseket.
+        3. Veszély: Említsd meg a vérrögök (trombusok) kockázatát, amik bármikor leválhatnak.
+        4. Megoldás: Mutasd be a Cardiotensive-et mint az erek "tisztítókúráját", ami olajfalevéllel és galagonyával kalapácsként veri le a koleszterin-plakkokat.
+        5. Sürgetés: Mondd el, hogy a szervezetének nincs több ideje várni, a tisztítást ma kell megkezdeni.
+
+        FONTOS: Ne használj unalmas jogi nyilatkozatokat. Legyél határozott, tekintélyelvű és meggyőző. Magyarul írj, tagolatlan, hosszú bekezdések helyett használj figyelemfelkeltő stílust.
+        """
             
             st.markdown(f"""
-                <a href="{AFFILIATE_LINK}" target="_blank">
-                    <button style="width:100%; padding:20px; background: #dc2626; color:white; font-size:18px; font-weight:bold; border:none; border-radius:10px; cursor:pointer; margin-top:20px;">
-                        MEGNÉZEM A JAVASOLT KÚRÁT (50% KEDVEZMÉNY) >>
-                    </button>
-                </a>
-            """, unsafe_allow_html=True)
+    <a href="{AFFILIATE_LINK}" target="_blank" style="text-decoration: none;">
+        <button style="width:100%; padding:25px; background: linear-gradient(90deg, #e11d48, #be123c); color:white; font-size:22px; font-weight:bold; border:none; border-radius:12px; cursor:pointer; box-shadow: 0 10px 20px rgba(225, 29, 72, 0.3);">
+            IGÉNYLEM A TISZTÍTÓKÚRÁT (LIMITÁLT 50% KEDVEZMÉNY) »
+        </button>
+    </a>
+""", unsafe_allow_html=True)
             
         except Exception as e:
             st.error(f"Hiba az AI generálás során: {e}")
+
