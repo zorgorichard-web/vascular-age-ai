@@ -5,10 +5,11 @@ import google.generativeai as genai
 API_KEY = "AIzaSyA0mRb_Ance9eUvUGpVKHfUIoIC-wXnL24" # A fizetős kulcsod
 AFFILIATE_LINK = "https://a-te-link-helye.hu" # IDE ÍRD A VÉGLEGES LINKET
 
-genai.configure(api_key=API_KEY)
-# A Gemini 2.0 Flash-t használjuk a sebesség és stabilitás miatt
-model = genai.GenerativeModel('gemini-2.0-flash')
+# HASZNÁLD EZT:
+import streamlit as st
 
+# A kulcsot a Streamlit "titkos" beállításaiból olvassuk ki
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- OLDAL BEÁLLÍTÁSA ---
 st.set_page_config(page_title="VascularAge AI - Klinikai Elemző", page_icon="⚖️", layout="centered")
 
